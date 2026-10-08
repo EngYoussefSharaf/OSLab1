@@ -27,12 +27,18 @@ do
 				then
 					cp "$file" "$dir"/$(basename "$file")
 					rm "$file"
+					echo "Restored <file> to <dir>."
 				fi
 				if [[ "$choice" -eq 2 ]]
                                 then
 					rm "$file"
+					echo "<file> permanently deleted."
                               	fi
 			fi
 		done
+	fi
+	if [[ "$num" -eq 0 ]]
+	then
+		echo "No malicious files to review."
 	fi
 done
