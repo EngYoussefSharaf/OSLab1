@@ -5,7 +5,7 @@ interval_secs="$3"
 function scan {
 	for file in "$dir"/*
 	do
-		if [[ "$file" == *.ps1 ]] || [[ "$file" == *.scr ]] || [[ "$file" == *.vbs ]] || [[ "$file" == *.bat ]] || [[ "$file" == *.exe ]] || grep -Eqw "virus|trojan|malware|worm|ransomware" "$file"
+		if [[ "$file" == *.ps1 ]] || [[ "$file" == *.scr ]] || [[ "$file" == *.vbs ]] || [[ "$file" == *.bat ]] || [[ "$file" == *.exe ]] || grep -Eq "virus|trojan|malware|worm|ransomware" "$file"
 		then
 			echo "$file is malicious and it is DELETED"
 			cp "$file" "$malicious_dir/$(basename $file)"
@@ -21,7 +21,7 @@ do
 	if ! cmp -s dictionary-info.last dictionary-info.new
 	then
 		scan
-		cp dictionary-info.new dictionary-info.last
+		ls -l "$dir" > dictionary-info.last
 	fi
 	sleep "$interval_secs"
 done
