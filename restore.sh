@@ -8,13 +8,13 @@ do
 		echo "No malicious files to review."
 		exit 0
 	else
+		echo "Choose a file:"
 		num=0
 		for file in "$malicious_dir"/*
 		do
 			let num+=1
-			echo "$num- $file"
+			echo "$num- $(basename $file)"
 		done
-		echo "Choose a file:"
 		read file_num
 		if [[ "$file_num" -le "$num" ]]
 		then
@@ -22,7 +22,7 @@ do
 			for file in "$malicious_dir"/*
 			do
 				let count+=1
-				if [[ "$count" -eq "$num" ]]
+				if [[ "$count" -eq "$file_num" ]]
 				then
 					echo "1: Restore this file back into dir (it was a false positive)"
 					echo "2: Permanently delete this file from malicious_dir (it was genuinely malicious)"
@@ -32,12 +32,12 @@ do
 					then
 						cp "$file" "$dir"/$(basename "$file")
 						rm "$file"
-						echo "Restored <file> to <dir>."
+						echo "Restored $(basename $file) to $dir."
 					fi
 					if [[ "$choice" -eq 2 ]]
        		                        then
 						rm "$file"
-						echo "<file> permanently deleted."
+						echo "$(basename $file) permanently deleted."
         	                      	fi
 				fi
 			done
