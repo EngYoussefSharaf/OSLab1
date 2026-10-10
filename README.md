@@ -12,6 +12,7 @@ OSLab1/
 ├── antivirus-cron.sh  # bonus: the same scan, run by cron (one scan, then exit)
 ├── restore.sh         # the restore tool
 ├── Makefile           # shortcuts to run everything
+├── whiteList.txt      # bonus: files marked as safe (created automatically)
 └── README.md          # this file
 ```
 
@@ -80,7 +81,9 @@ folder you do not care about.
 1. It saves a list of the folder (`ls -l`) and scans it right away.
 2. Every few seconds it makes a new list and compares it with the old one.
 3. If they are the same, it waits. If they are different, it scans again.
-4. For each bad file it prints `<file> is malicious and it is DELETED`, copies
+4. Before checking a file, it looks for the file in `whiteList.txt`. If it is
+   listed, the file is skipped.
+5. For each bad file it prints `<file> is malicious and it is DELETED`, copies
    the file to the quarantine folder, and deletes the original.
 
 ## Where the bad-file lists are
@@ -184,3 +187,84 @@ every day from 15 to 21 **and** on every Friday. So cron runs every Friday
 
 `date +%d` gives today's day number. In a crontab, `%` has a special meaning, so
 it must be written as `\%`.
+
+## Bonus 2: Whitelist
+
+A file that I restore with `restore.sh` is a false positive. Without a
+whitelist, the next scan would flag it again, because its extension or content
+has not changed. The whitelist remembers restored files so that the scan skips
+them.
+
+### Where the whitelist is stored
+
+The whitelist is a text file called `whiteList.txt`, in the project folder.
+It has **one path per line**, for example:
+
+```
+/home/os/OSLab1/dir/a.txt
+```
+
+Because it is a file on disk, it is not lost when `antivirusd.sh` stops. When
+the daemon starts again, it reads the same file, so the whitelist still works
+after a restart. The daemon runs `touch whiteList.txt` at startup, which
+creates the file if it is missing and never erases the old entries.
+
+### How a file gets added to the whitelist
+
+1. Stop the antivirus and run `make restore`.
+2. Choose a file from the numbered list.
+3. Choose `1` (restore).
+4. `restore.sh` copies the file back into `dir`, deletes it from `mal_dir`, and
+   then appends the line `<dir>/<file name>` to `whiteList.txt`.
+
+Choosing `2` (delete) or `3` (go back) does **not** add anything to the
+whitelist.
+
+### How the daemon checks it during a scan
+
+For every file in `dir`, the `scan` function does this **before** the
+extension and keyword checks:
+
+```bash
+if grep -qsxF "$file" whiteList.txt
+then
+        continue
+fi
+```
+
+- It searches for the file's path inside `whiteList.txt`.
+- If the path is found, `continue` skips the file. The extension and keyword
+  checks never run, so the file is not flagged.
+- If it is not found, the file is checked as usual.
+
+The `grep` options: `-q` prints nothing and only gives the result, `-s` hides
+the error if the file does not exist, `-x` requires the **whole line** to
+match, and `-F` reads the path as plain text, not as a regex. With `-x` and
+`-F`, `dir/a.txt` does not match `dir/a.txt.exe` or `dir/aXtxt`.
+
+### Test it
+
+```bash
+make run                                    # terminal 1
+echo "this is a virus" > dir/a.txt          # terminal 2: it gets quarantined
+# stop the daemon with Ctrl+C
+make restore                                # choose the file, then 1
+cat whiteList.txt                           # shows the path of a.txt
+make run                                    # a.txt stays in dir
+```
+
+Stop the daemon and start it again: `a.txt` still stays, which shows that the
+whitelist persists.
+
+### Remove a file from the whitelist
+
+Delete its line from `whiteList.txt` (open it with `nano whiteList.txt`). The
+file will be scanned again.
+
+### Limitations
+
+- The whitelist stores the **path**, not the content. If a restored file is
+  later replaced by a different file with the same name, it is still skipped.
+- The path must be written the same way by both scripts. `make run` and
+  `make restore` use the same `dir` value, so they match. A different spelling
+  such as `dir` and `./dir` would not match.
