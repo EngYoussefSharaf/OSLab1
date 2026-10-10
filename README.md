@@ -28,7 +28,7 @@ sudo apt install make
 Then make the scripts runnable (only once):
 
 ```bash
-chmod +x antivirusd.sh restore.sh
+chmod +x antivirusd.sh restore.sh antivirus-cron.sh
 ```
 
 ## How to run
@@ -201,7 +201,7 @@ The whitelist is a text file called `whiteList.txt`, in the project folder.
 It has **one path per line**, for example:
 
 ```
-/home/os/OSLab1/dir/a.txt
+dir/a.txt
 ```
 
 Because it is a file on disk, it is not lost when `antivirusd.sh` stops. When
