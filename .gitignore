@@ -1,0 +1,7 @@
+*.swp
+directory-info.*
+dictionary-info.*
+antivirus.log
+whiteList.txt
+dir/
+mal_dir/

@@ -1,5 +1,5 @@
-dir=/home/os/OSLab1/dir
-malicious_dir=/home/os/OSLab1/mal_dir
+dir=dir
+malicious_dir=mal_dir
 interval_secs=5
 .PHONY: prepare run restore
 prepare:
