@@ -30,9 +30,10 @@ do
 					read choice
 					if [[ "$choice" -eq 1 ]]
 					then
-						cp "$file" "$dir"/$(basename "$file")
+						cp "$file" "$dir/$(basename "$file")"
 						rm "$file"
 						echo "Restored $(basename $file) to $dir."
+						echo "$dir/$(basename "$file")" >> whiteList.txt
 					fi
 					if [[ "$choice" -eq 2 ]]
        		                        then

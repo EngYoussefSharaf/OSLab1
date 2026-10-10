@@ -2,10 +2,15 @@
 dir="$1"
 malicious_dir="$2"
 interval_secs="$3"
+touch whiteList.txt
 function scan {
 	for file in "$dir"/*
 	do
-		if [[ "$file" == *.ps1 ]] || [[ "$file" == *.scr ]] || [[ "$file" == *.vbs ]] || [[ "$file" == *.bat ]] || [[ "$file" == *.exe ]] || grep -Eqi "virus|trojan|malware|worm|ransomware" "$file"
+		if  grep -qxFs "$file" whiteList.txt
+		then
+			continue
+		fi
+		if [[ "$file" == *.ps1 ]] || [[ "$file" == *.scr ]] || [[ "$file" == *.vbs ]] || [[ "$file" == *.bat ]] || [[ "$file" == *.exe ]] || grep -Eqis "virus|trojan|malware|worm|ransomware" "$file" 
 		then
 			echo "$file is malicious and it is DELETED"
 			cp "$file" "$malicious_dir/$(basename $file)"
